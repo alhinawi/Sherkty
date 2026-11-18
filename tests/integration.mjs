@@ -344,6 +344,40 @@ check(
   ),
   "Activity summary does not disclose private document titles",
 );
+await b.call(
+  "/records/payslips/" + maya.id + "/transition",
+  "POST",
+  { version: maya.version, status: "Paid" },
+  403,
+);
+const noVendor = await a.call(
+  "/records/requests",
+  "POST",
+  { name: "Vendor not selected", amount: 50, reason: "Review guard" },
+  201,
+);
+await a.call(
+  "/records/requests/" + noVendor.id + "/transition",
+  "POST",
+  { version: 1, status: "Approved" },
+  400,
+);
+check(
+  (await a.call("/records/requests?q=Vendor%20not")).records[0].status ===
+    "Pending",
+  "Missing vendor cannot strand an approved purchase request",
+);
+await a.call(
+  "/records/orders",
+  "POST",
+  {
+    name: "Incomplete inventory order",
+    vendor: loaded.vendors[0].id,
+    product: loaded.products[0].id,
+    amount: 100,
+  },
+  400,
+);
 await a.call("/members/" + bm.id, "PATCH", { role: "operations" });
 await a.call(
   "/records/workflows",
