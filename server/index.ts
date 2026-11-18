@@ -395,6 +395,10 @@ async function validate(
     (d.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(d.time))
   )
     fail("Time must use HH:MM");
+  if (entity === "orders" && Boolean(d.product) !== Boolean(d.quantity))
+    fail(
+      "Choose both a product and quantity for inventory orders, or neither for services.",
+    );
   if (entity === "assets" && (d.salvage || 0) > d.cost)
     fail("Residual value cannot exceed acquisition cost");
   if (entity === "movements" && !["In", "Out"].includes(d.type))
@@ -775,6 +779,17 @@ app.post("/api/records/:entity/:id/transition", async (c) => {
     )
       fail("This amount requires approval by " + p.approver, 403);
   }
+  if (entity === "requests" && b.status === "Approved" && !d.vendor)
+    fail("Select a vendor before approving the purchase request.");
+  if (
+    entity === "payslips" &&
+    b.status === "Paid" &&
+    !["owner", "admin", "finance"].includes(a.role)
+  )
+    fail(
+      "Only finance or workspace administrators can record payroll as paid.",
+      403,
+    );
   let ops = update(db, a, entity, r, d, b.status, "marked " + b.status);
   if (entity === "applicants" && b.status === "Hired") {
     const employee = insert(
