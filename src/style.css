@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@theme {
+  --font-sans: "DM Sans", "IBM Plex Sans Arabic", sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", sans-serif;
+  --font-display: "Manrope", "IBM Plex Sans Arabic", sans-serif;
+  --color-ink: #183534;
+  --color-mint: #dff4e8;
+}

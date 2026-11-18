@@ -1,0 +1,8 @@
+name = "sherkty"
+compatibility_date = "2025-11-01"
+pages_build_output_dir = "out"
+[[d1_databases]]
+binding = "ERP_DB"
+database_name = "sherkty"
+database_id = "LOCAL_REPLACE_BEFORE_DEPLOY"
+migrations_dir = "migrations"
