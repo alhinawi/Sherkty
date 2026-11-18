@@ -1,0 +1,18 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE tenants (id TEXT PRIMARY KEY, name TEXT NOT NULL, currency TEXT NOT NULL DEFAULT 'EGP', created_at TEXT NOT NULL DEFAULT (datetime('now')), expires_at TEXT);
+CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE COLLATE NOCASE, name TEXT NOT NULL, password TEXT NOT NULL, salt TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE memberships (tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,role TEXT NOT NULL CHECK(role IN ('owner','admin','hr','finance','operations','sales','viewer')),PRIMARY KEY(tenant_id,user_id));
+CREATE TABLE sessions (hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,expires_at INTEGER NOT NULL);
+CREATE INDEX sessions_expiry ON sessions(expires_at);
+CREATE TABLE records (id TEXT NOT NULL,tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,entity TEXT NOT NULL,name TEXT NOT NULL,status TEXT NOT NULL DEFAULT '',data TEXT NOT NULL CHECK(json_valid(data)),version INTEGER NOT NULL DEFAULT 1,created_by TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')),updated_at TEXT NOT NULL DEFAULT (datetime('now')),archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0,1)),PRIMARY KEY(tenant_id,id));
+CREATE INDEX records_list ON records(tenant_id,entity,archived,updated_at DESC);
+CREATE INDEX records_status ON records(tenant_id,entity,status,archived);
+CREATE TABLE record_links (tenant_id TEXT NOT NULL,source_id TEXT NOT NULL,field TEXT NOT NULL,target_id TEXT NOT NULL,PRIMARY KEY(tenant_id,source_id,field),FOREIGN KEY(tenant_id,source_id) REFERENCES records(tenant_id,id) ON DELETE CASCADE,FOREIGN KEY(tenant_id,target_id) REFERENCES records(tenant_id,id));
+CREATE INDEX links_target ON record_links(tenant_id,target_id);
+CREATE TABLE audit (id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,user_id TEXT NOT NULL,actor TEXT NOT NULL,action TEXT NOT NULL,entity TEXT NOT NULL,record_id TEXT,name TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX audit_tenant ON audit(tenant_id,created_at DESC);
+CREATE TABLE versions (tenant_id TEXT NOT NULL,record_id TEXT NOT NULL,version INTEGER NOT NULL,data TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')),PRIMARY KEY(tenant_id,record_id,version),FOREIGN KEY(tenant_id,record_id) REFERENCES records(tenant_id,id) ON DELETE CASCADE);
+CREATE TABLE payroll_runs (tenant_id TEXT NOT NULL,period TEXT NOT NULL,employee_id TEXT NOT NULL,payslip_id TEXT NOT NULL,PRIMARY KEY(tenant_id,period,employee_id),FOREIGN KEY(tenant_id,employee_id) REFERENCES records(tenant_id,id),FOREIGN KEY(tenant_id,payslip_id) REFERENCES records(tenant_id,id));
+CREATE TABLE stock_balances (tenant_id TEXT NOT NULL,product_id TEXT NOT NULL,quantity INTEGER NOT NULL DEFAULT 0 CHECK(quantity>=0),PRIMARY KEY(tenant_id,product_id),FOREIGN KEY(tenant_id,product_id) REFERENCES records(tenant_id,id));
+CREATE TABLE rate_limits (key TEXT PRIMARY KEY,count INTEGER NOT NULL DEFAULT 0,expires_at INTEGER NOT NULL);
+CREATE TABLE invitations (id TEXT PRIMARY KEY,tenant_id TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,email TEXT NOT NULL COLLATE NOCASE,role TEXT NOT NULL,expires_at INTEGER NOT NULL,created_by TEXT NOT NULL,UNIQUE(tenant_id,email));
