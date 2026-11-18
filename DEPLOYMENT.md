@@ -2,7 +2,7 @@
 
 1. Confirm the approved Pages name is available. The requested name is `sherkty`.
 2. Confirm the Cloudflare account is on the free plan and has an unused D1 database slot. Do not upgrade or buy services.
-3. Create a D1 database named `sherkty`. Replace `LOCAL_REPLACE_BEFORE_DEPLOY` in `wrangler.toml` with its returned database ID.
+3. The deployment handoff supplied D1 database `sherkty`, ID `37626782-198d-47dc-b23f-29a969a90c23`. It is configured in `wrangler.toml` under binding `ERP_DB`. Verify it matches the intended Cloudflare account. Do not create a duplicate database.
 4. Apply **both** SQL migrations to the remote database:
    ```sh
    npx wrangler d1 migrations apply ERP_DB --remote
