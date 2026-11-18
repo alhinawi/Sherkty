@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+*.log
+.env*
+test-results/
+
+tests/schema.mjs
+
+.next/
+out/
+
+*.tsbuildinfo

@@ -1,0 +1,31 @@
+name: Quality and tenant isolation
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npx esbuild src/schema.ts --format=esm --outfile=tests/schema.mjs
+      - run: npm run db:local
+      - name: Run D1 integration tests
+        run: |
+          npm run serve > /tmp/server.log 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER || true' EXIT
+          for i in $(seq 1 40); do
+            curl -s http://localhost:8788/api/me | grep -q error && break
+            sleep 1
+          done
+          npm test || { cat /tmp/server.log; exit 1; }
+      - run: npm audit --omit=dev --audit-level=moderate
