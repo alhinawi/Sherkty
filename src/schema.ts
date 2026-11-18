@@ -672,3 +672,8 @@ export const roleModules: Record<string, string[]> = {
 };
 export const label = (f: { en: string; ar: string }, lang: string) =>
   lang === "ar" ? f.ar : f.en;
+
+export const defaultLanguage = (
+  country: string | undefined,
+  browser: string,
+) => (country === "EG" || /^ar(?:-|,|;|$)/i.test(browser) ? "ar" : "en");

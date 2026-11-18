@@ -1,7 +1,13 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
-import { entities, roleModules, modules, Field } from "../src/schema";
+import {
+  entities,
+  roleModules,
+  modules,
+  Field,
+  defaultLanguage,
+} from "../src/schema";
 import { seed } from "./seed";
 type Bindings = { ERP_DB: D1Database; ASSETS: Fetcher };
 type Auth = {
@@ -152,6 +158,15 @@ async function session(c: any, uid: string, tid: string) {
     maxAge: 7 * 86400,
   });
 }
+app.get("/api/public-config", (c) => {
+  const country = c.req.raw.cf?.country || c.req.header("CF-IPCountry");
+  return c.json({
+    suggestedLanguage: defaultLanguage(
+      typeof country === "string" ? country : undefined,
+      c.req.header("Accept-Language") || "",
+    ),
+  });
+});
 app.post("/api/auth/register", async (c) => {
   await limited(
     c.env.ERP_DB,

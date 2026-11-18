@@ -7,3 +7,6 @@ dist/
 test-results/
 
 tests/schema.mjs
+
+.next/
+out/

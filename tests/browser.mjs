@@ -49,7 +49,7 @@ for (const [name, key] of modules) {
     fullPage: true,
   });
   assert.equal(
-    await page.getByRole("alert").count(),
+    await page.locator('[data-app-error="true"]').count(),
     0,
     key + " should have no errors",
   );

@@ -1,6 +1,6 @@
 # Sherkty
 
-A bilingual, multi-tenant operations workspace for small companies. React, TypeScript and Tailwind on Cloudflare Pages, with a Hono API and D1 persistence.
+A bilingual, multi-tenant operations workspace for small companies. Next.js App Router, React, TypeScript and Tailwind on Cloudflare Pages, with a Hono API and D1 persistence.
 
 ## Working today
 
@@ -36,7 +36,7 @@ npm run build
 npm run serve
 ```
 
-Open `http://localhost:8788`. For frontend live reload, run `npm run dev` in another terminal while the API server is running.
+Open `http://localhost:8788`. For frontend live reload, run `npm run dev`. End-to-end API checks use the production static export served by Wrangler.
 
 ```sh
 npm run check
