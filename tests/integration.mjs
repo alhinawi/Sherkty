@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { entities } from "./schema.mjs";
+import { entities, defaultLanguage } from "./schema.mjs";
 const base = "http://localhost:8788/api";
 let passes = 0;
 const check = (ok, msg) => {
@@ -31,6 +31,26 @@ class Client {
 }
 const a = new Client(),
   b = new Client();
+check(
+  (
+    await a.call("/public-config", "GET", undefined, 200, {
+      "Accept-Language": "ar-EG,ar;q=0.9",
+    })
+  ).suggestedLanguage === "ar",
+  "Arabic browsers default to Arabic",
+);
+check(
+  defaultLanguage("EG", "en-US") === "ar",
+  "Egypt defaults to Arabic even with English browser",
+);
+check(
+  (
+    await a.call("/public-config", "GET", undefined, 200, {
+      "Accept-Language": "en-US",
+    })
+  ).suggestedLanguage === "en",
+  "Other visitors default to English",
+);
 await a.call("/me", "GET", undefined, 401);
 await a.call("/auth/demo", "POST", {}, 201);
 const am = await a.call("/me");

@@ -1,5 +1,5 @@
+"use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { createRoot } from "react-dom/client";
 import {
   LayoutDashboard,
   Users,
@@ -55,7 +55,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { entities, modules, label, roleModules, Field } from "./schema";
-import "./style.css";
 type Row = Record<string, any>;
 const icons = [
   LayoutDashboard,
@@ -180,9 +179,12 @@ const secondary =
   btn + " border border-slate-200 bg-white text-slate-600 hover:bg-slate-50";
 const input =
   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
-function App() {
-  const [lang, setLang] = useState(
-      localStorage.getItem("erp-language") || "en",
+export default function App() {
+  const [lang, setLanguage] = useState(
+      typeof window !== "undefined"
+        ? localStorage.getItem("erp-language") ||
+            (navigator.language.toLowerCase().startsWith("ar") ? "ar" : "en")
+        : "en",
     ),
     [me, setMe] = useState<Row | null>(null),
     [loading, setLoading] = useState(true),
@@ -195,13 +197,27 @@ function App() {
     [search, setSearch] = useState(""),
     [notification, setNotification] = useState(false),
     [profile, setProfile] = useState(false);
+  const setLang = (value: string) => {
+    localStorage.setItem("erp-language", value);
+    setLanguage(value);
+  };
+  useEffect(() => {
+    if (!localStorage.getItem("erp-language"))
+      api("/public-config")
+        .then((d) => {
+          if (!localStorage.getItem("erp-language"))
+            setLanguage(d.suggestedLanguage);
+        })
+        .catch(() => {});
+  }, []);
   const t = (en: string, ar: string) => (lang === "ar" ? ar : en);
   const state = (s: string) => (lang === "ar" ? statusAr[s] || s : s);
   const money = (v: number) =>
     new Intl.NumberFormat(lang === "ar" ? "en-EG" : "en-US", {
       style: "currency",
       currency: me?.currency || "EGP",
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
     }).format(v || 0);
   const notify = (msg: string) => {
     setToast(msg);
@@ -218,7 +234,6 @@ function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("erp-language", lang);
   }, [lang]);
   useEffect(() => {
     if (me && !me.modules.includes(module)) setModule("dashboard");
@@ -500,6 +515,7 @@ function App() {
           {error && (
             <div
               role="alert"
+              data-app-error="true"
               className="mb-4 flex items-center justify-between rounded-xl bg-rose-50 p-4 text-sm text-rose-700"
             >
               {error}
@@ -672,6 +688,7 @@ function Auth({ lang, setLang, done }: any) {
           {error && (
             <p
               role="alert"
+              data-app-error="true"
               className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700"
             >
               {error}
@@ -1270,11 +1287,25 @@ function Dashboard({ ctx }: any) {
                     {d.doneTasks}/{d.totalTasks}
                   </strong>
                 </div>
-                <progress
-                  value={d.doneTasks}
-                  max={Math.max(1, d.totalTasks)}
-                  className="mt-2 h-1.5 w-full accent-[#8ca46f]"
-                />
+                <svg
+                  role="img"
+                  aria-label={d.name + " tasks completed"}
+                  viewBox="0 0 100 3"
+                  preserveAspectRatio="none"
+                  className="mt-2 h-1.5 w-full"
+                >
+                  <rect width="100" height="3" rx="1.5" fill="#e8ede3" />
+                  <rect
+                    width={
+                      d.totalTasks
+                        ? Math.round((d.doneTasks / d.totalTasks) * 100)
+                        : 0
+                    }
+                    height="3"
+                    rx="1.5"
+                    fill="#8ca46f"
+                  />
+                </svg>
               </div>
             ))}
           </div>
@@ -1397,6 +1428,7 @@ function Notice({ text }: any) {
   return (
     <div
       role="alert"
+      data-app-error="true"
       className="my-4 rounded-xl border border-rose-100 bg-rose-50 p-4 text-sm text-rose-700"
     >
       {text}
@@ -2287,7 +2319,11 @@ async function exportRows(
   ctx: any,
   lookups: Record<string, Row[]> = {},
 ) {
-  const headers = fields.map((f) => label(f, ctx.lang));
+  const headers = fields.map(
+    (f) =>
+      label(f, ctx.lang) +
+      (f.type === "money" ? " (" + ctx.me.currency + ")" : ""),
+  );
   const values = rows.map((r) =>
     fields.map((f) => {
       const v = r[f.key];
@@ -3201,4 +3237,3 @@ function DocumentFiles({ ctx, id }: any) {
     </div>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);

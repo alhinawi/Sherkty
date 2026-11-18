@@ -12,9 +12,9 @@
    npm ci
    npm run check
    npm run build
-   npx wrangler pages deploy dist --project-name sherkty --branch main
+   npx wrangler pages deploy out --project-name sherkty --branch main
    ```
-6. Ensure the production Pages project has the D1 binding named **ERP_DB** pointing at the database. Advanced-mode `_worker.js` is included in `dist` by the build.
+6. Ensure the production Pages project has the D1 binding named **ERP_DB** pointing at the database. Advanced-mode `_worker.js` is included in `out` by the build.
 7. Smoke-test live demo creation, separate browser sessions, CRUD persistence after refresh, protected API 401s, role restrictions, document-file roundtrip and Arabic/mobile views. Never use real employee, tax, bank or payroll data for testing.
 8. Record the actual deployment and repository URLs. Only then set the GitHub repository homepage to the verified live URL. Do not manufacture a success URL.
 
