@@ -2345,11 +2345,30 @@ async function exportRows(
       );
     const d = w.document;
     d.title = title;
+    const styles = Array.from(
+      document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'),
+    ).map(
+      (link) =>
+        new Promise<void>((resolve) => {
+          const copy = d.createElement("link");
+          copy.rel = "stylesheet";
+          copy.href = link.href;
+          copy.onload = () => resolve();
+          copy.onerror = () => resolve();
+          d.head.appendChild(copy);
+        }),
+    );
+    d.body.className =
+      ctx.lang === "ar"
+        ? "bg-white p-8 font-arabic text-slate-700"
+        : "bg-white p-8 font-sans text-slate-700";
     d.documentElement.dir = ctx.lang === "ar" ? "rtl" : "ltr";
     const h = d.createElement("h1");
+    h.className = "mb-3 font-display text-2xl font-bold";
     h.textContent = ctx.me.company + " · " + title;
     d.body.appendChild(h);
     const meta = d.createElement("p");
+    meta.className = "mb-6 text-xs text-slate-500";
     meta.textContent =
       new Date().toISOString().slice(0, 10) +
       " · " +
@@ -2358,32 +2377,43 @@ async function exportRows(
       ctx.t("records", "سجلات");
     d.body.appendChild(meta);
     const table = d.createElement("table");
-    table.setAttribute("border", "1");
-    table.setAttribute("cellpadding", "8");
-    table.setAttribute("cellspacing", "0");
+    table.className = "w-full border-collapse text-xs";
+    const thead = d.createElement("thead");
     const tr = d.createElement("tr");
     for (const header of headers) {
       const th = d.createElement("th");
+      th.className =
+        "border border-slate-200 bg-slate-50 p-3 text-start font-semibold";
       th.textContent = header;
       tr.appendChild(th);
     }
-    table.appendChild(tr);
+    thead.appendChild(tr);
+    table.appendChild(thead);
+    const tbody = d.createElement("tbody");
     for (const row of values) {
       const tr = d.createElement("tr");
       for (const v of row) {
         const td = d.createElement("td");
+        td.className = "break-words border border-slate-200 p-3 text-start";
         td.textContent = String(v);
         tr.appendChild(td);
       }
-      table.appendChild(tr);
+      tbody.appendChild(tr);
     }
+    table.appendChild(tbody);
     d.body.appendChild(table);
     const tip = d.createElement("p");
+    tip.className = "mt-6 text-xs text-slate-500 print:hidden";
     tip.textContent = ctx.t(
       "Choose Save as PDF in the print dialog.",
       "اختار حفظ PDF من نافذة الطباعة.",
     );
     d.body.appendChild(tip);
+    await Promise.race([
+      Promise.all(styles),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
+    await d.fonts.ready;
     w.focus();
     w.print();
     return;

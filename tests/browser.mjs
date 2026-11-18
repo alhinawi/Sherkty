@@ -101,6 +101,22 @@ download = page.waitForEvent("download");
 await page.getByRole("button", { name: "Export Excel", exact: true }).click();
 file = await download;
 await file.saveAs("/downloads/sherkty-employees.xlsx");
+const popupReady = page.waitForEvent("popup");
+await page.getByRole("button", { name: "Export PDF", exact: true }).click();
+const printPage = await popupReady;
+await printPage.waitForTimeout(1200);
+assert.match(await printPage.locator("body").innerText(), /Browser QA Updated/);
+await printPage.pdf({
+  path: "/downloads/sherkty-employee-report.pdf",
+  format: "A4",
+  landscape: true,
+  printBackground: true,
+});
+await printPage.screenshot({
+  path: "/downloads/sherkty-report-print.png",
+  fullPage: true,
+});
+await printPage.close();
 // A fresh isolated demo keeps presentation captures free of QA-created records.
 await page.request.post("http://localhost:8788/api/auth/demo", { data: {} });
 await page.reload();

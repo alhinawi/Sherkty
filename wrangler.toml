@@ -4,5 +4,5 @@ pages_build_output_dir = "out"
 [[d1_databases]]
 binding = "ERP_DB"
 database_name = "sherkty"
-database_id = "LOCAL_REPLACE_BEFORE_DEPLOY"
+database_id = "37626782-198d-47dc-b23f-29a969a90c23"
 migrations_dir = "migrations"
