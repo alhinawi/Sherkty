@@ -1,5 +1,30 @@
 # Sherkty
 
+[Open the live application](https://sherkty.pages.dev/)
+
+## See it in action
+
+Company overview, fictional employee directory and project tracking.
+
+![Sherkty desktop dashboard](docs/media/desktop.webp)
+
+| People | Projects |
+| --- | --- |
+| ![People view](docs/media/people.webp) | ![Projects view](docs/media/projects.webp) |
+
+### Short interface tour
+
+![Sherkty live interface tour](docs/media/demo.gif)
+
+A short GIF of three real navigation captures, not a continuous screen recording. Captured from the live site on November 19, 2026. The captures use an isolated fictional demo workspace.
+
+<details>
+<summary>Mobile layout (390px)</summary>
+
+<img src="docs/media/mobile.webp" alt="Sherkty mobile dashboard" width="390" />
+
+</details>
+
 A bilingual, multi-tenant operations workspace for small companies. Next.js App Router, React, TypeScript and Tailwind on Cloudflare Pages, with a Hono API and D1 persistence.
 
 ## Working today
